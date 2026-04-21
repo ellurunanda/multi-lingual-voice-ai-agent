@@ -1,0 +1,78 @@
+# Render Blueprint — Real-time Multilingual Voice AI Agent
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # ── Backend (FastAPI) ──────────────────────────────────────────────────────
+  - type: web
+    name: voiceai-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: OPENAI_API_KEY
+        sync: false          # Set manually in Render dashboard
+      - key: OPENAI_MODEL
+        value: gpt-4o
+      - key: OPENAI_WHISPER_MODEL
+        value: whisper-1
+      - key: OPENAI_TTS_MODEL
+        value: tts-1
+      - key: OPENAI_TTS_VOICE
+        value: alloy
+      - key: DATABASE_URL
+        fromDatabase:
+          name: voiceai-db
+          property: connectionString
+      - key: REDIS_URL
+        sync: false          # Set manually — use Upstash Redis free tier
+      - key: FRONTEND_URL
+        sync: false          # Set to your Render frontend URL after deploy
+      - key: CORS_ORIGINS
+        sync: false          # Set to your Render frontend URL after deploy
+      - key: LOG_LEVEL
+        value: INFO
+      - key: SUPPORTED_LANGUAGES
+        value: en,hi,ta,te
+      - key: DEFAULT_LANGUAGE
+        value: en
+      - key: CAMPAIGN_SCHEDULER_INTERVAL
+        value: 60
+      - key: REMINDER_HOURS_BEFORE
+        value: 24
+
+  # ── Frontend (React/Vite → Static Site) ───────────────────────────────────
+  - type: web
+    name: voiceai-frontend
+    runtime: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+    pullRequestPreviewsEnabled: false
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false          # Set to your backend Render URL, e.g. https://voiceai-backend.onrender.com
+      - key: VITE_WS_URL
+        sync: false          # Set to wss://voiceai-backend.onrender.com
+
+# ── PostgreSQL Database ────────────────────────────────────────────────────
+databases:
+  - name: voiceai-db
+    plan: free
+    databaseName: voiceai_db
+    user: voiceai

@@ -1,0 +1,50 @@
+# FastAPI & Server
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+websockets>=12.0
+python-multipart>=0.0.7
+httpx>=0.26.0
+
+# Database
+sqlalchemy>=2.0.25
+asyncpg>=0.29.0
+alembic>=1.13.1
+psycopg2-binary>=2.9.10
+
+# Redis
+redis>=5.0.1
+# aioredis is deprecated; redis-py 5+ has async support built-in
+
+# OpenAI
+openai>=1.12.0
+
+# Audio Processing
+pydub>=0.25.1
+soundfile>=0.12.1
+numpy>=1.26.3
+audioop-lts>=0.2.1  # backport of audioop removed in Python 3.13
+
+# Language Detection
+langdetect>=1.0.9
+# fasttext-wheel is not available for Python 3.13 on Windows; using langdetect only
+
+# Environment & Config
+python-dotenv>=1.0.0
+pydantic>=2.5.3
+pydantic-settings>=2.1.0
+
+# Scheduling
+apscheduler>=3.10.4
+
+# Logging & Monitoring
+structlog>=24.1.0
+prometheus-client>=0.19.0
+
+# Security
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# Utilities
+python-dateutil>=2.8.2
+pytz>=2024.1
+aiofiles>=23.2.1
