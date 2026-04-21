@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voice AI Agent — Architecture Diagram</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 40px;
+      min-height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 36px;
+    }
+    .diagram {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Row layouts */
+    .row { display: flex; gap: 16px; align-items: stretch; }
+    .row.center { justify-content: center; }
+
+    /* Boxes */
+    .box {
+      border-radius: 12px;
+      padding: 16px 20px;
+      border: 1.5px solid;
+      position: relative;
+      flex: 1;
+    }
+    .box-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      opacity: 0.7;
+    }
+    .box-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .box-tech {
+      font-size: 12px;
+      opacity: 0.65;
+      margin-bottom: 8px;
+    }
+    .box-desc {
+      font-size: 12px;
+      line-height: 1.5;
+      opacity: 0.8;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin: 2px 2px 0 0;
+    }
+
+    /* Color themes */
+    .blue   { background: #1e3a5f; border-color: #3b82f6; }
+    .blue   .box-title { color: #93c5fd; }
+    .blue   .tag { background: #1d4ed8; color: #bfdbfe; }
+
+    .purple { background: #2d1b69; border-color: #8b5cf6; }
+    .purple .box-title { color: #c4b5fd; }
+    .purple .tag { background: #5b21b6; color: #ddd6fe; }
+
+    .green  { background: #14532d; border-color: #22c55e; }
+    .green  .box-title { color: #86efac; }
+    .green  .tag { background: #15803d; color: #bbf7d0; }
+
+    .orange { background: #431407; border-color: #f97316; }
+    .orange .box-title { color: #fdba74; }
+    .orange .tag { background: #c2410c; color: #fed7aa; }
+
+    .teal   { background: #134e4a; border-color: #14b8a6; }
+    .teal   .box-title { color: #5eead4; }
+    .teal   .tag { background: #0f766e; color: #99f6e4; }
+
+    .pink   { background: #500724; border-color: #ec4899; }
+    .pink   .box-title { color: #f9a8d4; }
+    .pink   .tag { background: #9d174d; color: #fbcfe8; }
+
+    .gray   { background: #1e293b; border-color: #475569; }
+    .gray   .box-title { color: #94a3b8; }
+    .gray   .tag { background: #334155; color: #cbd5e1; }
+
+    .yellow { background: #422006; border-color: #eab308; }
+    .yellow .box-title { color: #fde047; }
+    .yellow .tag { background: #854d0e; color: #fef08a; }
+
+    /* Arrow connectors */
+    .arrow-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+      height: 32px;
+    }
+    .arrow-down {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .arrow-line {
+      width: 2px;
+      height: 20px;
+      background: #475569;
+    }
+    .arrow-head {
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 8px solid #475569;
+    }
+    .arrow-label {
+      font-size: 10px;
+      color: #64748b;
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    /* Pipeline flow */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: #1e293b;
+      border: 1.5px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+      overflow: hidden;
+    }
+    .pipeline-step {
+      flex: 1;
+      text-align: center;
+      padding: 12px 8px;
+      border-radius: 8px;
+      position: relative;
+    }
+    .pipeline-step .step-icon { font-size: 24px; margin-bottom: 6px; }
+    .pipeline-step .step-name { font-size: 13px; font-weight: 700; }
+    .pipeline-step .step-tech { font-size: 11px; opacity: 0.6; margin-top: 2px; }
+    .pipeline-step .step-latency {
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 6px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .pipeline-arrow {
+      font-size: 20px;
+      color: #475569;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .step-stt   { background: #1e3a5f; }
+    .step-stt   .step-latency { background: #1d4ed8; color: #bfdbfe; }
+    .step-agent { background: #2d1b69; }
+    .step-agent .step-latency { background: #5b21b6; color: #ddd6fe; }
+    .step-tts   { background: #134e4a; }
+    .step-tts   .step-latency { background: #0f766e; color: #99f6e4; }
+    .step-ws    { background: #1e293b; border: 1px solid #475569; }
+    .step-ws    .step-latency { background: #334155; color: #cbd5e1; }
+
+    /* Memory section */
+    .memory-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    /* Tools grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .tool-item {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #c4b5fd;
+    }
+    .tool-item::before { content: "⚙ "; opacity: 0.7; }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* Section label */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #475569;
+      text-align: center;
+      margin-bottom: -8px;
+    }
+
+    /* Latency bar */
+    .latency-bar {
+      background: #1e293b;
+      border: 1.5px solid #334155;
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .latency-bar-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .latency-track {
+      display: flex;
+      height: 28px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .latency-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: white;
+    }
+    .seg-stt   { background: #2563eb; flex: 120; }
+    .seg-llm   { background: #7c3aed; flex: 200; }
+    .seg-tts   { background: #0d9488; flex: 100; }
+    .seg-net   { background: #475569; flex: 60; }
+    .latency-labels {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .latency-label {
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .latency-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+    @media print {
+      body { background: white; color: black; padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎙️ Real-Time Multilingual Voice AI Agent</h1>
+<p class="subtitle">System Architecture — Clinical Appointment Booking | STT → Agent → Memory → Tools → TTS</p>
+
+<div class="diagram">
+
+  <!-- USER / FRONTEND -->
+  <div class="section-label">Client Layer</div>
+  <div class="row">
+    <div class="box blue" style="flex: 0.6;">
+      <div class="box-title">Frontend</div>
+      <div class="box-name">React / Vite SPA</div>
+      <div class="box-tech">voiceai-frontend-4khc.onrender.com</div>
+      <div class="box-desc">
+        <span class="tag">VoiceButton</span>
+        <span class="tag">ConversationPanel</span>
+        <span class="tag">LanguageSelector</span>
+        <span class="tag">AppointmentsPage</span>
+        <span class="tag">DashboardPage</span>
+      </div>
+    </div>
+    <div class="box gray" style="flex: 0.4;">
+      <div class="box-title">Transport</div>
+      <div class="box-name">WebSocket + REST</div>
+      <div class="box-tech">wss:// for voice · https:// for CRUD</div>
+      <div class="box-desc">
+        <span class="tag">useVoiceAgent hook</span>
+        <span class="tag">MediaRecorder API</span>
+        <span class="tag">Base64 audio chunks</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW -->
+  <div class="arrow-row">
+    <div class="arrow-down">
+      <div class="arrow-line"></div>
+      <div class="arrow-head"></div>
+      <div class="arrow-label">WebSocket /ws/voice/{session_id}</div>
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="section-label">Real-Time Voice Pipeline (Target: &lt;450ms)</div>
+  <div class="pipeline">
+    <div class="pipeline-step step-stt">
+      <div class="step-icon">🎤</div>
+      <div class="step-name">STT</div>
+      <div class="step-tech">OpenAI Whisper-1</div>
+      <div class="step-latency">~120ms</div>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step step-agent">
+      <div class="step-icon">🤖</div>
+      <div class="step-name">Agent</div>
+      <div class="step-tech">GPT-4o + Function Calling</div>
+      <div class="step-latency">~200ms</div>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step step-tts">
+      <div class="step-icon">🔊</div>
+      <div class="step-name">TTS</div>
+      <div class="step-tech">OpenAI tts-1 (alloy)</div>
+      <div class="step-latency">~100ms</div>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step step-ws">
+      <div class="step-icon">📡</div>
+      <div class="step-name">Response</div>
+      <div class="step-tech">WebSocket stream</div>
+      <div class="step-latency">~30ms</div>
+    </div>
+  </div>
+
+  <!-- LATENCY BAR -->
+  <div class="latency-bar">
+    <div class="latency-bar-title">⚡ Latency Budget (450ms total)</div>
+    <div class="latency-track">
+      <div class="latency-segment seg-stt">STT 120ms</div>
+      <div class="latency-segment seg-llm">LLM 200ms</div>
+      <div class="latency-segment seg-tts">TTS 100ms</div>
+      <div class="latency-segment seg-net">Net 30ms</div>
+    </div>
+    <div class="latency-labels">
+      <div class="latency-label"><div class="latency-dot" style="background:#2563eb"></div> STT: Whisper-1 transcription</div>
+      <div class="latency-label"><div class="latency-dot" style="background:#7c3aed"></div> LLM: GPT-4o + tool calls</div>
+      <div class="latency-label"><div class="latency-dot" style="background:#0d9488"></div> TTS: Speech synthesis</div>
+      <div class="latency-label"><div class="latency-dot" style="background:#475569"></div> Network: WebSocket round-trip</div>
+    </div>
+  </div>
+
+  <!-- AGENT + TOOLS -->
+  <div class="section-label">Agent Layer</div>
+  <div class="row">
+    <div class="box purple" style="flex: 0.5;">
+      <div class="box-title">AI Agent Core</div>
+      <div class="box-name">GPT-4o Reasoning</div>
+      <div class="box-tech">agent/reasoning/agent_core.py</div>
+      <div class="box-desc">
+        Multilingual system prompt · Intent detection · Conversation state management · Function call orchestration
+      </div>
+    </div>
+    <div class="box purple" style="flex: 0.5;">
+      <div class="box-title">Agent Tools (Function Calling)</div>
+      <div class="box-name">Appointment Tools</div>
+      <div class="box-tech">agent/tools/appointment_tools.py</div>
+      <div class="tools-grid">
+        <div class="tool-item">book_appointment</div>
+        <div class="tool-item">cancel_appointment</div>
+        <div class="tool-item">reschedule_appointment</div>
+        <div class="tool-item">list_doctors</div>
+        <div class="tool-item">get_available_slots</div>
+        <div class="tool-item">get_patient_appointments</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEMORY -->
+  <div class="section-label">Memory Layer</div>
+  <div class="memory-row">
+    <div class="box teal">
+      <div class="box-title">Session Memory (Short-term)</div>
+      <div class="box-name">Redis · In-memory fallback</div>
+      <div class="box-tech">memory/session_memory.py · TTL: 1 hour</div>
+      <div class="box-desc">
+        <span class="tag">conversation history</span>
+        <span class="tag">detected language</span>
+        <span class="tag">patient context</span>
+        <span class="tag">booking state</span>
+      </div>
+    </div>
+    <div class="box green">
+      <div class="box-title">Persistent Memory (Long-term)</div>
+      <div class="box-name">PostgreSQL · SQLAlchemy Async</div>
+      <div class="box-tech">memory/persistent_memory.py · models/database.py</div>
+      <div class="box-desc">
+        <span class="tag">patients</span>
+        <span class="tag">doctors</span>
+        <span class="tag">appointments</span>
+        <span class="tag">campaigns</span>
+        <span class="tag">reminder_logs</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULER -->
+  <div class="section-label">Background Services</div>
+  <div class="row">
+    <div class="box yellow">
+      <div class="box-title">Campaign Scheduler</div>
+      <div class="box-name">APScheduler (in-process)</div>
+      <div class="box-tech">scheduler/campaign_scheduler.py · scheduler/appointment_engine.py</div>
+      <div class="box-desc">
+        Polls DB every 60 seconds · Sends reminders 24h before appointments · Manages outbound campaign calls
+        <br/><br/>
+        <span class="tag">interval: 60s</span>
+        <span class="tag">reminder: 24h before</span>
+        <span class="tag">languages: en/hi/ta/te</span>
+      </div>
+    </div>
+    <div class="box orange">
+      <div class="box-title">Language Services</div>
+      <div class="box-name">Detection + STT + TTS</div>
+      <div class="box-tech">services/language_detection.py · speech_to_text.py · text_to_speech.py</div>
+      <div class="box-desc">
+        <span class="tag">langdetect</span>
+        <span class="tag">Whisper-1 auto-detect</span>
+        <span class="tag">en · hi · ta · te</span>
+        <span class="tag">ffmpeg audio conversion</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFRASTRUCTURE -->
+  <div class="section-label">Infrastructure (Render.com Free Tier)</div>
+  <div class="row">
+    <div class="box gray" style="flex: 0.25;">
+      <div class="box-title">Backend</div>
+      <div class="box-name">Docker · FastAPI</div>
+      <div class="box-tech">Python 3.11 · uvicorn · 2 workers</div>
+    </div>
+    <div class="box gray" style="flex: 0.25;">
+      <div class="box-title">Frontend</div>
+      <div class="box-name">Static Site · Nginx</div>
+      <div class="box-tech">React build · CDN · Global</div>
+    </div>
+    <div class="box gray" style="flex: 0.25;">
+      <div class="box-title">Database</div>
+      <div class="box-name">PostgreSQL 15</div>
+      <div class="box-tech">Render managed · voiceai-db</div>
+    </div>
+    <div class="box gray" style="flex: 0.25;">
+      <div class="box-title">Cache</div>
+      <div class="box-name">Redis (Upstash)</div>
+      <div class="box-tech">Free tier · Global · TLS</div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> Frontend / Transport</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div> Agent / Tools</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#14b8a6"></div> Session Memory (Redis)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> Persistent Memory (PostgreSQL)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div> Scheduler</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div> Language Services</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#475569"></div> Infrastructure</div>
+  </div>
+
+</div>
+
+<p style="text-align:center; margin-top:32px; font-size:11px; color:#475569;">
+  To save as PNG: Right-click → Print → Save as PDF &nbsp;|&nbsp; Or use browser screenshot (Ctrl+Shift+S)
+</p>
+
+</body>
+</html>
